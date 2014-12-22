@@ -1,0 +1,11 @@
+source 'https://github.com/CocoaPods/Specs.git'
+
+target 'XBAuthentication', :exclusive => true do
+  pod "XBAuthentication", :path => "../"
+end
+
+target 'Tests', :exclusive => true do
+  pod "XBAuthentication", :path => "../"
+
+  pod 'FBSnapshotTestCase'
+end
