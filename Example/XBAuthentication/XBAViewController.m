@@ -7,8 +7,9 @@
 //
 
 #import "XBAViewController.h"
+#import <XBAuthentication.h>
 
-@interface XBAViewController ()
+@interface XBAViewController () <XBAuthenticationDelegate>
 
 @end
 
@@ -17,7 +18,20 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
+    
+    XBAuthentication *authenticator = [XBAuthentication sharedInstance];
+    authenticator.username = @"eugenenguyen2";
+    authenticator.password = @"20081991";
+    [authenticator signin];
+    
+    authenticator.delegate = self;
+}
+
+#pragma mark - XBAuthenticate Delegate
+
+- (void)authenticateDidSignIn:(XBAuthentication *)authenticator
+{
+    
 }
 
 - (void)didReceiveMemoryWarning

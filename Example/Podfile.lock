@@ -1,0 +1,46 @@
+PODS:
+  - ASIHTTPRequest (1.8.2):
+    - ASIHTTPRequest/ASIWebPageRequest
+    - ASIHTTPRequest/CloudFiles
+    - ASIHTTPRequest/Core
+    - ASIHTTPRequest/S3
+  - ASIHTTPRequest/ASIWebPageRequest (1.8.2):
+    - ASIHTTPRequest/Core
+  - ASIHTTPRequest/CloudFiles (1.8.2):
+    - ASIHTTPRequest/Core
+  - ASIHTTPRequest/Core (1.8.2):
+    - Reachability
+  - ASIHTTPRequest/S3 (1.8.2):
+    - ASIHTTPRequest/Core
+  - Bolts (1.1.3)
+  - Facebook-iOS-SDK (3.21.1):
+    - Bolts (~> 1.0)
+  - FBSnapshotTestCase (1.4)
+  - JSONKit-NoWarning (1.2)
+  - MD5Digest (0.1.0)
+  - Reachability (3.2)
+  - XBAuthentication (0.1.0):
+    - ASIHTTPRequest
+    - Facebook-iOS-SDK (~> 3.21)
+    - JSONKit-NoWarning
+    - MD5Digest
+
+DEPENDENCIES:
+  - FBSnapshotTestCase
+  - XBAuthentication (from `../`)
+
+EXTERNAL SOURCES:
+  XBAuthentication:
+    :path: ../
+
+SPEC CHECKSUMS:
+  ASIHTTPRequest: 2c8335b49410c0e2ad42829c438e74d454b77590
+  Bolts: 3db0a875235e0c9042b013af13af0f00f79b102c
+  Facebook-iOS-SDK: 18c26e86ab25c17854a2ee2a8f60562099c6600f
+  FBSnapshotTestCase: f9f225b5ba11c8d8c09075590490df16314e4d62
+  JSONKit-NoWarning: fc8d6dd8ec65e303867d1bd274632fc60a4a8ab9
+  MD5Digest: 058b7162b1fc8c30feddf10bfe66e0565797c45f
+  Reachability: 1ef8adf5c4e3d362f96515d4278f68dad3c26930
+  XBAuthentication: f3c60aae8b1da9e68e85cf4d5ab09fb1d204bb90
+
+COCOAPODS: 0.34.4
