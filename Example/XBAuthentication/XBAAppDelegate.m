@@ -7,12 +7,13 @@
 //
 
 #import "XBAAppDelegate.h"
+#import <XBAuthentication.h>
 
 @implementation XBAAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    // Override point for customization after application launch.
+    [[XBAuthentication sharedInstance] setHost:@"http://wunhunt.sflashcard.com"];
     return YES;
 }
 							
