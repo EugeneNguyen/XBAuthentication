@@ -46,7 +46,6 @@ And lastly, sign in or sign up as you wish.
 [authenticator signup];
 // OR, remember, OR, not AND
 [authenticator signin];
-
 ```
 
 You can use following function for your next step
