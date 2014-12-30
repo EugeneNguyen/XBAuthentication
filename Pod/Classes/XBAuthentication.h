@@ -16,7 +16,14 @@
 @optional
 
 - (void)authenticateDidSignIn:(XBAuthentication *)authenticator;
+- (void)authenticateDidFailSignIn:(XBAuthentication *)authenticator withError:(NSError *)error;
+
+- (void)authenticateDidSignUp:(XBAuthentication *)authenticator;
+- (void)authenticateDidFailSignUp:(XBAuthentication *)authenticator withError:(NSError *)error;
+
 - (void)authenticateDidSignOut:(XBAuthentication *)authenticator;
+
+
 
 @end
 

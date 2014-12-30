@@ -64,10 +64,20 @@ static XBAuthentication *__sharedAuthentication = nil;
         }
         
         self.token = result[@"token"];
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidSignUp:)])
+        {
+            [self.delegate authenticateDidSignUp:self];
+        }
     }];
     
     [request setFailedBlock:^{
         NSLog(@"%@", _request.error);
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignUp:withError:)])
+        {
+            [self.delegate authenticateDidFailSignUp:self withError:_request.error];
+        }
     }];
 }
 
@@ -101,10 +111,21 @@ static XBAuthentication *__sharedAuthentication = nil;
         }
         
         self.token = result[@"token"];
+        
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidSignIn:)])
+        {
+            [self.delegate authenticateDidSignIn:self];
+        }
     }];
     
     [request setFailedBlock:^{
         NSLog(@"%@", _request.error);
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignIn:withError:)])
+        {
+            [self.delegate authenticateDidFailSignIn:self withError:_request.error];
+        }
     }];
 }
 
