@@ -46,6 +46,13 @@ static XBAuthentication *__sharedAuthentication = nil;
     }
     [request setPostValue:self.md5password forKey:@"password"];
     [request setPostValue:@([self.password length]) forKey:@"password_length"];
+    
+    if (self.deviceToken)
+    {
+        [request setPostValue:self.deviceToken forKey:@"device_id"];
+        [request setPostValue:@"ios" forKey:@"device_type"];
+    }
+    
     [request startAsynchronous];
     
     __block ASIFormDataRequest *_request = request;
@@ -93,6 +100,11 @@ static XBAuthentication *__sharedAuthentication = nil;
         [request setPostValue:self.email forKey:@"email"];
     }
     [request setPostValue:self.md5password forKey:@"password"];
+    if (self.deviceToken)
+    {
+        [request setPostValue:self.deviceToken forKey:@"device_id"];
+        [request setPostValue:@"ios" forKey:@"device_type"];
+    }
     [request startAsynchronous];
     
     __block ASIFormDataRequest *_request = request;

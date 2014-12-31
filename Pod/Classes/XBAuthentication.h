@@ -23,8 +23,6 @@
 
 - (void)authenticateDidSignOut:(XBAuthentication *)authenticator;
 
-
-
 @end
 
 @interface XBAuthentication : NSObject
@@ -37,6 +35,7 @@
 @property (nonatomic, retain) NSString * username;
 @property (nonatomic, retain) NSString * email;
 @property (nonatomic, retain) NSString * password, *md5password;
+@property (nonatomic, retain) NSString * deviceToken;
 
 @property (nonatomic, assign) int userid;
 @property (nonatomic, retain) NSString *token;
