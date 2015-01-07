@@ -34,5 +34,6 @@ Pod::Spec.new do |s|
   s.dependency 'ASIHTTPRequest'
   s.dependency 'JSONKit-NoWarning'
   s.dependency 'MD5Digest'
+  s.dependency 'SDWebImage'
   s.dependency 'Facebook-iOS-SDK', '~> 3.21'
 end

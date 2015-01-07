@@ -36,6 +36,7 @@
 @property (nonatomic, retain) NSString * email;
 @property (nonatomic, retain) NSString * password, *md5password;
 @property (nonatomic, retain) NSString * deviceToken;
+@property (nonatomic, retain) NSString * facebookAccessToken;
 
 @property (nonatomic, assign) int userid;
 @property (nonatomic, retain) NSString *token;
@@ -60,6 +61,8 @@
 - (void)signout;
 + (XBAuthentication *)sharedInstance;
 - (void)loadInformationFromPlist:(NSString *)plistName;
+
+- (void)pullUserInformation;
 
 
 @end

@@ -10,6 +10,7 @@
 #import "ASIFormDataRequest.h"
 #import "NSString+MD5.h"
 #import "JSONKit.h"
+#import "SDImageCache.h"
 
 #define XBAuthenticateService(X) [ASIFormDataRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@/plusauthentication/%@", self.host, X]]]
 
@@ -33,6 +34,8 @@ static XBAuthentication *__sharedAuthentication = nil;
     self.md5password = [_password MD5Digest];
 }
 
+#pragma mark - Sign up/in/out
+
 - (void)signup
 {
     ASIFormDataRequest *request = XBAuthenticateService(@"register");
@@ -43,6 +46,10 @@ static XBAuthentication *__sharedAuthentication = nil;
     if (self.email)
     {
         [request setPostValue:self.email forKey:@"email"];
+    }
+    if (self.facebookAccessToken)
+    {
+        [request setPostValue:self.facebookAccessToken forKey:@"access_token"];
     }
     [request setPostValue:self.md5password forKey:@"password"];
     [request setPostValue:@([self.password length]) forKey:@"password_length"];
@@ -76,6 +83,8 @@ static XBAuthentication *__sharedAuthentication = nil;
         {
             [self.delegate authenticateDidSignUp:self];
         }
+        
+        [self pullUserInformation];
     }];
     
     [request setFailedBlock:^{
@@ -105,6 +114,10 @@ static XBAuthentication *__sharedAuthentication = nil;
         [request setPostValue:self.deviceToken forKey:@"device_id"];
         [request setPostValue:@"ios" forKey:@"device_type"];
     }
+    if (self.facebookAccessToken)
+    {
+        [request setPostValue:self.facebookAccessToken forKey:@"access_token"];
+    }
     [request startAsynchronous];
     
     __block ASIFormDataRequest *_request = request;
@@ -124,11 +137,12 @@ static XBAuthentication *__sharedAuthentication = nil;
         
         self.token = result[@"token"];
         
-        
         if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidSignIn:)])
         {
             [self.delegate authenticateDidSignIn:self];
         }
+        
+        [self pullUserInformation];
     }];
     
     [request setFailedBlock:^{
@@ -158,6 +172,32 @@ static XBAuthentication *__sharedAuthentication = nil;
     NSString *path = [[NSBundle mainBundle] pathForResource:plistName ofType:@"plist"];
     self.config = [NSDictionary dictionaryWithContentsOfFile:path];
 }
+
+#pragma mark - User's information
+
+- (void)pullUserInformation
+{
+    ASIFormDataRequest *request = XBAuthenticateService(@"get_user_information");
+    [request setPostValue:self.token forKey:@"token"];
+    [request startAsynchronous];
+    
+    __block ASIFormDataRequest *_request = request;
+    
+    [request setCompletionBlock:^{
+        NSLog(@"%@", _request.responseString);
+        NSDictionary *result = [_request.responseString mutableObjectFromJSONString];
+        if ([result[@"code"] intValue] != 200)
+        {
+            return ;
+        }
+        NSDictionary *data = result[@"data"];
+        self.username = data[@"username"];
+        self.displayname = data[@"display_name"];
+        self.userInformation = data;
+    }];
+}
+
+#pragma mark - Save / Load session
 
 - (void)saveSession
 {
