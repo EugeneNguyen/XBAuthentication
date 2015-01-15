@@ -37,6 +37,7 @@
 @property (nonatomic, retain) NSString * password, *md5password;
 @property (nonatomic, retain) NSString * deviceToken;
 @property (nonatomic, retain) NSString * facebookAccessToken;
+@property (nonatomic, retain) NSString * facebookID;
 
 @property (nonatomic, assign) int userid;
 @property (nonatomic, retain) NSString *token;

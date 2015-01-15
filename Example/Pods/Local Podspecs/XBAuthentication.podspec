@@ -36,4 +36,5 @@ Pod::Spec.new do |s|
   s.dependency 'MD5Digest'
   s.dependency 'SDWebImage'
   s.dependency 'Facebook-iOS-SDK', '~> 3.21'
+  s.dependency 'XBLanguage'
 end

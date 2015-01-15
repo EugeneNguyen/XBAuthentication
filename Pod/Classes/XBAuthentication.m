@@ -49,7 +49,11 @@ static XBAuthentication *__sharedAuthentication = nil;
     }
     if (self.facebookAccessToken)
     {
-        [request setPostValue:self.facebookAccessToken forKey:@"access_token"];
+        [request setPostValue:self.facebookAccessToken forKey:@"facebook_access_token"];
+    }
+    if (self.facebookID)
+    {
+        [request setPostValue:self.facebookID forKey:@"facebook_id"];
     }
     [request setPostValue:self.md5password forKey:@"password"];
     [request setPostValue:@([self.password length]) forKey:@"password_length"];
@@ -114,9 +118,59 @@ static XBAuthentication *__sharedAuthentication = nil;
         [request setPostValue:self.deviceToken forKey:@"device_id"];
         [request setPostValue:@"ios" forKey:@"device_type"];
     }
-    if (self.facebookAccessToken)
+    if (self.facebookID)
     {
-        [request setPostValue:self.facebookAccessToken forKey:@"access_token"];
+        [request setPostValue:self.facebookID forKey:@"facebook_id"];
+    }
+    [request startAsynchronous];
+    
+    __block ASIFormDataRequest *_request = request;
+    
+    [request setCompletionBlock:^{
+        NSDictionary *result = [_request.responseString mutableObjectFromJSONString];
+        NSLog(@"%@", _request.responseString);
+        if (!result)
+        {
+            return;
+        }
+        
+        if ([result[@"code"] intValue] != 200)
+        {
+            return;
+        }
+        
+        self.token = result[@"token"];
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidSignIn:)])
+        {
+            [self.delegate authenticateDidSignIn:self];
+        }
+        
+        [self pullUserInformation];
+    }];
+    
+    [request setFailedBlock:^{
+        NSLog(@"%@", _request.error);
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignIn:withError:)])
+        {
+            [self.delegate authenticateDidFailSignIn:self withError:_request.error];
+        }
+    }];
+}
+
+- (void)signinWithFacebook
+{
+    
+    ASIFormDataRequest *request = XBAuthenticateService(@"login");
+    if (self.facebookID)
+    {
+        [request setPostValue:self.facebookID forKey:@"facebook_id"];
+    }
+    if (self.deviceToken)
+    {
+        [request setPostValue:self.deviceToken forKey:@"device_id"];
+        [request setPostValue:@"ios" forKey:@"device_type"];
     }
     [request startAsynchronous];
     

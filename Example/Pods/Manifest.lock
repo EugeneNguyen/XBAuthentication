@@ -28,6 +28,10 @@ PODS:
     - JSONKit-NoWarning
     - MD5Digest
     - SDWebImage
+    - XBLanguage
+  - XBLanguage (0.1.0):
+    - ASIHTTPRequest
+    - JSONKit-NoWarning
 
 DEPENDENCIES:
   - FBSnapshotTestCase
@@ -46,6 +50,7 @@ SPEC CHECKSUMS:
   MD5Digest: 058b7162b1fc8c30feddf10bfe66e0565797c45f
   Reachability: 1ef8adf5c4e3d362f96515d4278f68dad3c26930
   SDWebImage: 116e88633b5b416ea0ca4b334a4ac59cf72dd38d
-  XBAuthentication: e1f9676653389fdab0397100cb9fa97821efd5b9
+  XBAuthentication: 618aaa81298af1854e2014acc0af2e3fe20c7699
+  XBLanguage: 1da00778aef85e6ae2c4f7d428ba84b62256a93a
 
 COCOAPODS: 0.34.4

@@ -20,7 +20,7 @@
     [super viewDidLoad];
     
     XBAuthentication *authenticator = [XBAuthentication sharedInstance];
-    authenticator.username = @"eugenenguyen2";
+    authenticator.username = @"eugenenguyen3";
     authenticator.password = @"20081991";
     [authenticator signin];
     

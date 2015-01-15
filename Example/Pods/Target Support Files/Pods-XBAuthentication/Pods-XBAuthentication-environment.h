@@ -85,3 +85,9 @@
 // Please contact the author.
 // Version: 0.1.0.2.
 
+// XBLanguage
+#define COCOAPODS_POD_AVAILABLE_XBLanguage
+#define COCOAPODS_VERSION_MAJOR_XBLanguage 0
+#define COCOAPODS_VERSION_MINOR_XBLanguage 1
+#define COCOAPODS_VERSION_PATCH_XBLanguage 0
+
