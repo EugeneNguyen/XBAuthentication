@@ -62,6 +62,7 @@
 - (void)loadSession;
 
 - (void)signup;
+- (void)signinWithFacebook
 - (void)signin;
 - (void)signout;
 + (XBAuthentication *)sharedInstance;

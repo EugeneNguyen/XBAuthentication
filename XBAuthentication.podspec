@@ -9,7 +9,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "XBAuthentication"
-  s.version          = "0.1.0.5"
+  s.version          = "0.1.0.6"
   s.summary          = "Authentication class to integrate with Plus Authenticate"
   s.description      = <<-DESC
                        Authentication class to integrate with Plus Authenticate. Plus Authenticate will be provided in Jan 15 2015.
