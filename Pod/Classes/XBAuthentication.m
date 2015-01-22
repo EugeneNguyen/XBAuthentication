@@ -76,24 +76,21 @@ static XBAuthentication *__sharedAuthentication = nil;
             return;
         }
         
-        if ([result[@"code"] intValue] != 200)
-        {
-            return;
-        }
-        
-        self.token = result[@"token"];
-        
+        self.errorDescription = [_request.responseString objectFromJSONString];
+
         if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidSignUp:)])
         {
             [self.delegate authenticateDidSignUp:self];
         }
-        
-        [self pullUserInformation];
+        if ([result[@"code"] intValue] == 200)
+        {
+            self.token = result[@"token"];
+            [self pullUserInformation];
+        }
     }];
     
     [request setFailedBlock:^{
         NSLog(@"%@", _request.error);
-        
         if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignUp:withError:)])
         {
             [self.delegate authenticateDidFailSignUp:self withError:_request.error];
@@ -133,25 +130,22 @@ static XBAuthentication *__sharedAuthentication = nil;
         {
             return;
         }
-        
-        if ([result[@"code"] intValue] != 200)
-        {
-            return;
-        }
-        
-        self.token = result[@"token"];
-        
+
+        self.errorDescription = [_request.responseString objectFromJSONString];
+
         if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidSignIn:)])
         {
             [self.delegate authenticateDidSignIn:self];
         }
-        
-        [self pullUserInformation];
+        if ([result[@"code"] intValue] == 200)
+        {
+            self.token = result[@"token"];
+            [self pullUserInformation];
+        }
     }];
     
     [request setFailedBlock:^{
         NSLog(@"%@", _request.error);
-        
         if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignIn:withError:)])
         {
             [self.delegate authenticateDidFailSignIn:self withError:_request.error];
@@ -161,7 +155,6 @@ static XBAuthentication *__sharedAuthentication = nil;
 
 - (void)signinWithFacebook
 {
-    
     ASIFormDataRequest *request = XBAuthenticateService(@"login");
     if (self.facebookID)
     {
@@ -183,20 +176,19 @@ static XBAuthentication *__sharedAuthentication = nil;
         {
             return;
         }
-        
-        if ([result[@"code"] intValue] != 200)
-        {
-            return;
-        }
-        
-        self.token = result[@"token"];
+
+        self.errorDescription = [_request.responseString objectFromJSONString];
         
         if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidSignIn:)])
         {
             [self.delegate authenticateDidSignIn:self];
         }
         
-        [self pullUserInformation];
+        if ([result[@"code"] intValue] == 200)
+        {
+            self.token = result[@"token"];
+            [self pullUserInformation];
+        }
     }];
     
     [request setFailedBlock:^{
@@ -225,6 +217,12 @@ static XBAuthentication *__sharedAuthentication = nil;
 {
     NSString *path = [[NSBundle mainBundle] pathForResource:plistName ofType:@"plist"];
     self.config = [NSDictionary dictionaryWithContentsOfFile:path];
+}
+
+- (void)loadDescriptionFromPlist:(NSString *)plistName
+{
+    NSString *path = [[NSBundle mainBundle] pathForResource:plistName ofType:@"plist"];
+    self.erroList = [NSArray arrayWithContentsOfFile:path];
 }
 
 #pragma mark - User's information
@@ -272,5 +270,6 @@ static XBAuthentication *__sharedAuthentication = nil;
         }
     }
 }
+
 
 @end
