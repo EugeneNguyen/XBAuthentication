@@ -160,6 +160,10 @@ static XBAuthentication *__sharedAuthentication = nil;
     {
         [request setPostValue:self.facebookID forKey:@"facebook_id"];
     }
+    if (self.facebookAccessToken)
+    {
+        [request setPostValue:self.facebookAccessToken forKey:@"facebook_access_token"];
+    }
     if (self.deviceToken)
     {
         [request setPostValue:self.deviceToken forKey:@"device_id"];
