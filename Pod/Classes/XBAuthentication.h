@@ -45,6 +45,10 @@
 @property (nonatomic, retain) NSString * avatarPath;
 @property (nonatomic, retain) UIImage * avatar;
 
+@property (nonatomic, retain) NSDictionary * errorDescription;
+@property (nonatomic, retain) NSArray * erroList;
+
+
 @property (nonatomic, retain) NSDictionary * userInformation;
 @property (nonatomic, retain) NSDictionary * config;
 
@@ -58,12 +62,15 @@
 - (void)loadSession;
 
 - (void)signup;
+- (void)signinWithFacebook;
 - (void)signin;
 - (void)signout;
 + (XBAuthentication *)sharedInstance;
 - (void)loadInformationFromPlist:(NSString *)plistName;
+- (void)loadDescriptionFromPlist:(NSString *)plistName;
 
 - (void)pullUserInformation;
 
 
 @end
+

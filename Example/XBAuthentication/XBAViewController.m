@@ -20,8 +20,8 @@
     [super viewDidLoad];
     
     XBAuthentication *authenticator = [XBAuthentication sharedInstance];
-    authenticator.username = @"eugenenguyen3";
-    authenticator.password = @"20081991";
+    authenticator.username = @"tthufo";
+    authenticator.password = @"123456";
     [authenticator signin];
     
     authenticator.delegate = self;
@@ -31,7 +31,8 @@
 
 - (void)authenticateDidSignIn:(XBAuthentication *)authenticator
 {
-    
+    NSLog(@"%@",authenticator.errorDescription);
+
 }
 
 - (void)didReceiveMemoryWarning
