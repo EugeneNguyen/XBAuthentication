@@ -78,6 +78,7 @@ static XBAuthentication *__sharedAuthentication = nil;
         
         if ([result[@"code"] intValue] != 200)
         {
+            [self.delegate authenticateDidFailSignUp:self withError:nil andInformation:nil];
             return;
         }
         
@@ -94,9 +95,9 @@ static XBAuthentication *__sharedAuthentication = nil;
     [request setFailedBlock:^{
         NSLog(@"%@", _request.error);
         
-        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignUp:withError:)])
+        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignUp:withError:andInformation:)])
         {
-            [self.delegate authenticateDidFailSignUp:self withError:_request.error];
+            [self.delegate authenticateDidFailSignUp:self withError:_request.error andInformation:nil];
         }
     }];
 }
@@ -136,6 +137,7 @@ static XBAuthentication *__sharedAuthentication = nil;
         
         if ([result[@"code"] intValue] != 200)
         {
+            [self.delegate authenticateDidFailSignIn:self withError:nil andInformation:result];
             return;
         }
         
@@ -152,9 +154,9 @@ static XBAuthentication *__sharedAuthentication = nil;
     [request setFailedBlock:^{
         NSLog(@"%@", _request.error);
         
-        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignIn:withError:)])
+        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignIn:withError:andInformation:)])
         {
-            [self.delegate authenticateDidFailSignIn:self withError:_request.error];
+            [self.delegate authenticateDidFailSignIn:self withError:_request.error andInformation:nil];
         }
     }];
 }
