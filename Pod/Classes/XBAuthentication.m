@@ -76,7 +76,7 @@ static XBAuthentication *__sharedAuthentication = nil;
             return;
         }
         
-        if ([result[@"code"] intValue] != 200)
+        if ([result[@"code"] intValue] != 200 || [result[@"code"] intValue] != 201)
         {
             [self.delegate authenticateDidFailSignUp:self withError:nil andInformation:nil];
             return;
@@ -87,7 +87,7 @@ static XBAuthentication *__sharedAuthentication = nil;
         {
             [self.delegate authenticateDidSignUp:self];
         }
-        if ([result[@"code"] intValue] == 200)
+        if ([result[@"code"] intValue] == 200 || [result[@"code"] intValue] == 201)
         {
             self.token = result[@"token"];
             [self pullUserInformation];
@@ -137,7 +137,7 @@ static XBAuthentication *__sharedAuthentication = nil;
             return;
         }
         
-        if ([result[@"code"] intValue] != 200)
+        if ([result[@"code"] intValue] != 200 || [result[@"code"] intValue] != 201)
         {
             [self.delegate authenticateDidFailSignIn:self withError:nil andInformation:result];
             return;
@@ -148,7 +148,7 @@ static XBAuthentication *__sharedAuthentication = nil;
         {
             [self.delegate authenticateDidSignIn:self];
         }
-        if ([result[@"code"] intValue] == 200)
+        if ([result[@"code"] intValue] == 200 || [result[@"code"] intValue] == 201)
         {
             self.token = result[@"token"];
             [self pullUserInformation];
@@ -199,7 +199,7 @@ static XBAuthentication *__sharedAuthentication = nil;
             [self.delegate authenticateDidSignIn:self];
         }
         
-        if ([result[@"code"] intValue] == 200)
+        if ([result[@"code"] intValue] == 200 || [result[@"code"] intValue] == 201)
         {
             self.token = result[@"token"];
             [self pullUserInformation];
@@ -253,7 +253,7 @@ static XBAuthentication *__sharedAuthentication = nil;
     [request setCompletionBlock:^{
         NSLog(@"%@", _request.responseString);
         NSDictionary *result = [_request.responseString mutableObjectFromJSONString];
-        if ([result[@"code"] intValue] != 200)
+        if ([result[@"code"] intValue] != 200 || [result[@"code"] intValue] != 201)
         {
             return ;
         }
