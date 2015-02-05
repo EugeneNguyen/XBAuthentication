@@ -261,6 +261,7 @@ static XBAuthentication *__sharedAuthentication = nil;
         self.username = data[@"username"];
         self.displayname = data[@"display_name"];
         self.userInformation = data;
+        [self saveSession];
     }];
 }
 
@@ -268,20 +269,23 @@ static XBAuthentication *__sharedAuthentication = nil;
 
 - (void)saveSession
 {
-    [[NSUserDefaults standardUserDefaults] setObject:self forKey:@"archived_user_information"];
-    [[NSUserDefaults standardUserDefaults] setObject:[NSDate date] forKey:@"archived_last_update"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    if (self.token)
+    {
+        [[NSUserDefaults standardUserDefaults] setObject:self.token forKey:@"archived_user_information"];
+        [[NSUserDefaults standardUserDefaults] setObject:[NSDate date] forKey:@"archived_last_update"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
 }
 
 - (void)loadSession
 {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:@"archived_last_update"])
     {
-        XBAuthentication *authenticator = [[NSUserDefaults standardUserDefaults] objectForKey:@"archived_user_information"];
+        self.token = [[NSUserDefaults standardUserDefaults] objectForKey:@"archived_user_information"];
         NSDate *lastUpdate = [[NSUserDefaults standardUserDefaults] objectForKey:@"archived_last_update"];
         if (self.expiredTime <= 0 || [[NSDate date] timeIntervalSinceDate:lastUpdate] < self.expiredTime)
         {
-            __sharedAuthentication = [authenticator copy];
+            [self pullUserInformation];
         }
     }
 }
