@@ -45,13 +45,13 @@
 // FBSnapshotTestCase
 #define COCOAPODS_POD_AVAILABLE_FBSnapshotTestCase
 #define COCOAPODS_VERSION_MAJOR_FBSnapshotTestCase 1
-#define COCOAPODS_VERSION_MINOR_FBSnapshotTestCase 4
+#define COCOAPODS_VERSION_MINOR_FBSnapshotTestCase 5
 #define COCOAPODS_VERSION_PATCH_FBSnapshotTestCase 0
 
 // Facebook-iOS-SDK
 #define COCOAPODS_POD_AVAILABLE_Facebook_iOS_SDK
 #define COCOAPODS_VERSION_MAJOR_Facebook_iOS_SDK 3
-#define COCOAPODS_VERSION_MINOR_Facebook_iOS_SDK 22
+#define COCOAPODS_VERSION_MINOR_Facebook_iOS_SDK 23
 #define COCOAPODS_VERSION_PATCH_Facebook_iOS_SDK 0
 
 // JSONKit-NoWarning
@@ -86,14 +86,14 @@
 
 // XBAuthentication
 #define COCOAPODS_POD_AVAILABLE_XBAuthentication
-// This library does not follow semantic-versioning,
-// so we were not able to define version macros.
-// Please contact the author.
-// Version: 0.1.0.2.
+#define COCOAPODS_VERSION_MAJOR_XBAuthentication 0
+#define COCOAPODS_VERSION_MINOR_XBAuthentication 1
+#define COCOAPODS_VERSION_PATCH_XBAuthentication 1
 
 // XBLanguage
 #define COCOAPODS_POD_AVAILABLE_XBLanguage
-#define COCOAPODS_VERSION_MAJOR_XBLanguage 0
-#define COCOAPODS_VERSION_MINOR_XBLanguage 1
-#define COCOAPODS_VERSION_PATCH_XBLanguage 0
+// This library does not follow semantic-versioning,
+// so we were not able to define version macros.
+// Please contact the author.
+// Version: 0.3.0.1.
 

@@ -53,6 +53,17 @@ You can use following function for your next step
 ```objective-c
 
 
+// Forgot password (with username or email)
+- (void)forgotPasswordForUser:(NSString *)user complete:(XBARequestCompletion)completion;
+
+// Change password (with old / new password)
+- (void)changePasswordFrom:(NSString *)oldPassword to:(NSString *)newPassword complete:(XBARequestCompletion)completion;
+
+// save / load session, using for remember me function
+
+- (void)saveSession;
+- (void)loadSession;
+
 
 ```
 

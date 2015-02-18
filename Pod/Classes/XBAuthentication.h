@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+typedef void (^XBARequestCompletion)(NSString * responseString, NSError * error);
+
 @class XBAuthentication;
 
 @protocol XBAuthenticationDelegate <NSObject>
@@ -58,6 +60,8 @@
 
 // save and load the login status in case of you want to save your session
 
++ (XBAuthentication *)sharedInstance;
+
 - (void)saveSession;
 - (void)loadSession;
 
@@ -65,12 +69,14 @@
 - (void)signinWithFacebook;
 - (void)signin;
 - (void)signout;
-+ (XBAuthentication *)sharedInstance;
+
 - (void)loadInformationFromPlist:(NSString *)plistName;
 - (void)loadDescriptionFromPlist:(NSString *)plistName;
 
 - (void)pullUserInformation;
 
+- (void)forgotPasswordForUser:(NSString *)user complete:(XBARequestCompletion)completion;
+- (void)changePasswordFrom:(NSString *)oldPassword to:(NSString *)newPassword complete:(XBARequestCompletion)completion;
 
 @end
 

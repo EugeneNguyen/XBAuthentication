@@ -156,7 +156,6 @@ static XBAuthentication *__sharedAuthentication = nil;
     }];
     
     [request setFailedBlock:^{
-        NSLog(@"%@", _request.error);
         if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignIn:withError:andInformation:)])
         {
             [self.delegate authenticateDidFailSignIn:self withError:_request.error andInformation:nil];
@@ -238,6 +237,38 @@ static XBAuthentication *__sharedAuthentication = nil;
 {
     NSString *path = [[NSBundle mainBundle] pathForResource:plistName ofType:@"plist"];
     self.erroList = [NSArray arrayWithContentsOfFile:path];
+}
+
+- (void)forgotPasswordForUser:(NSString *)user complete:(XBARequestCompletion)completion
+{
+    ASIFormDataRequest *request = XBAuthenticateService(@"forgot_password_generate_code");
+    [request setPostValue:user forKey:@"user"];
+    
+    __block ASIFormDataRequest *_request = request;
+    [_request setFailedBlock:^{
+        completion(nil, request.error);
+    }];
+    [_request setCompletionBlock:^{
+        completion(request.responseString, nil);
+    }];
+    [request startAsynchronous];
+}
+
+- (void)changePasswordFrom:(NSString *)oldPassword to:(NSString *)newPassword complete:(XBARequestCompletion)completion
+{
+    ASIFormDataRequest *request = XBAuthenticateService(@"change_password");
+    [request setPostValue:self.token forKey:@"token"];
+    [request setPostValue:[oldPassword MD5Digest] forKey:@"oldpassword"];
+    [request setPostValue:[newPassword MD5Digest] forKey:@"newpassword"];
+    
+    __block ASIFormDataRequest *_request = request;
+    [_request setFailedBlock:^{
+        completion(nil, request.error);
+    }];
+    [_request setCompletionBlock:^{
+        completion(request.responseString, nil);
+    }];
+    [request startAsynchronous];
 }
 
 #pragma mark - User's information
