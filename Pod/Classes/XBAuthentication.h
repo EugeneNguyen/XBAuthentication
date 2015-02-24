@@ -23,6 +23,10 @@
 
 - (void)authenticateDidSignOut:(XBAuthentication *)authenticator;
 
+- (void)authenticateDidRecoverPassword:(XBAuthentication *)authenticator;
+
+- (void)authenticateDidFailRecoverPassword:(XBAuthentication *)authenticator withError:(NSError *)error andInformation:(NSDictionary *)information;
+
 @end
 
 @interface XBAuthentication : NSObject

@@ -228,6 +228,50 @@ static XBAuthentication *__sharedAuthentication = nil;
     }
 }
 
+#pragma mark - password
+
+- (void)recoverPassword
+{
+    ASIFormDataRequest *request = XBAuthenticateService(@"forgot_password_generate_code");
+    if (self.username)
+    {
+        [request setPostValue:self.username forKey:@"username"];
+    }
+    [request startAsynchronous];
+    
+    __block ASIFormDataRequest *_request = request;
+    
+    [request setCompletionBlock:^{
+        NSDictionary *result = [_request.responseString mutableObjectFromJSONString];
+        NSLog(@"%@", _request.responseString);
+        if (!result)
+        {
+            return;
+        }
+        
+        if ([result[@"code"] intValue] != 200 && [result[@"code"] intValue] != 201)
+        {
+            [self.delegate authenticateDidFailRecoverPassword:self withError:nil andInformation:result];
+            return;
+        }
+        
+        self.errorDescription = [_request.responseString objectFromJSONString];
+        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidRecoverPassword:)])
+        {
+            [self.delegate authenticateDidRecoverPassword:self];
+        }
+    }];
+    
+    [request setFailedBlock:^{
+        NSLog(@"%@", _request.error);
+        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignIn:withError:andInformation:)])
+        {
+            [self.delegate authenticateDidFailSignIn:self withError:_request.error andInformation:nil];
+        }
+    }];
+}
+
+
 - (void)loadInformationFromPlist:(NSString *)plistName
 {
     NSString *path = [[NSBundle mainBundle] pathForResource:plistName ofType:@"plist"];
