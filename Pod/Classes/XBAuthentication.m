@@ -75,19 +75,19 @@ static XBAuthentication *__sharedAuthentication = nil;
         {
             return;
         }
+        self.errorDescription = [_request.responseString objectFromJSONString];
         
-        if ([result[@"code"] intValue] != 200 && [result[@"code"] intValue] != 201)
+        if ([result[@"code"] intValue] != 200)
         {
             [self.delegate authenticateDidFailSignUp:self withError:nil andInformation:nil];
             return;
         }
         
-        self.errorDescription = [_request.responseString objectFromJSONString];
         if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidSignUp:)])
         {
             [self.delegate authenticateDidSignUp:self];
         }
-        if ([result[@"code"] intValue] == 200 || [result[@"code"] intValue] == 201)
+        if ([result[@"code"] intValue] == 200)
         {
             self.token = result[@"token"];
             [self pullUserInformation];
@@ -137,18 +137,19 @@ static XBAuthentication *__sharedAuthentication = nil;
             return;
         }
         
-        if ([result[@"code"] intValue] != 200 && [result[@"code"] intValue] != 201)
+        self.errorDescription = [_request.responseString objectFromJSONString];
+        
+        if ([result[@"code"] intValue] != 200)
         {
             [self.delegate authenticateDidFailSignIn:self withError:nil andInformation:result];
             return;
         }
         
-        self.errorDescription = [_request.responseString objectFromJSONString];
         if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidSignIn:)])
         {
             [self.delegate authenticateDidSignIn:self];
         }
-        if ([result[@"code"] intValue] == 200 || [result[@"code"] intValue] == 201)
+        if ([result[@"code"] intValue] == 200)
         {
             self.token = result[@"token"];
             [self pullUserInformation];
@@ -156,7 +157,6 @@ static XBAuthentication *__sharedAuthentication = nil;
     }];
     
     [request setFailedBlock:^{
-        NSLog(@"%@", _request.error);
         if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignIn:withError:andInformation:)])
         {
             [self.delegate authenticateDidFailSignIn:self withError:_request.error andInformation:nil];
@@ -199,7 +199,7 @@ static XBAuthentication *__sharedAuthentication = nil;
             [self.delegate authenticateDidSignIn:self];
         }
         
-        if ([result[@"code"] intValue] == 200 || [result[@"code"] intValue] == 201)
+        if ([result[@"code"] intValue] == 200)
         {
             self.token = result[@"token"];
             [self pullUserInformation];
@@ -228,50 +228,6 @@ static XBAuthentication *__sharedAuthentication = nil;
     }
 }
 
-#pragma mark - password
-
-- (void)recoverPassword
-{
-    ASIFormDataRequest *request = XBAuthenticateService(@"forgot_password_generate_code");
-    if (self.username)
-    {
-        [request setPostValue:self.username forKey:@"username"];
-    }
-    [request startAsynchronous];
-    
-    __block ASIFormDataRequest *_request = request;
-    
-    [request setCompletionBlock:^{
-        NSDictionary *result = [_request.responseString mutableObjectFromJSONString];
-        NSLog(@"%@", _request.responseString);
-        if (!result)
-        {
-            return;
-        }
-        
-        if ([result[@"code"] intValue] != 200 && [result[@"code"] intValue] != 201)
-        {
-            [self.delegate authenticateDidFailRecoverPassword:self withError:nil andInformation:result];
-            return;
-        }
-        
-        self.errorDescription = [_request.responseString objectFromJSONString];
-        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidRecoverPassword:)])
-        {
-            [self.delegate authenticateDidRecoverPassword:self];
-        }
-    }];
-    
-    [request setFailedBlock:^{
-        NSLog(@"%@", _request.error);
-        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignIn:withError:andInformation:)])
-        {
-            [self.delegate authenticateDidFailSignIn:self withError:_request.error andInformation:nil];
-        }
-    }];
-}
-
-
 - (void)loadInformationFromPlist:(NSString *)plistName
 {
     NSString *path = [[NSBundle mainBundle] pathForResource:plistName ofType:@"plist"];
@@ -282,6 +238,38 @@ static XBAuthentication *__sharedAuthentication = nil;
 {
     NSString *path = [[NSBundle mainBundle] pathForResource:plistName ofType:@"plist"];
     self.erroList = [NSArray arrayWithContentsOfFile:path];
+}
+
+- (void)forgotPasswordForUser:(NSString *)user complete:(XBARequestCompletion)completion
+{
+    ASIFormDataRequest *request = XBAuthenticateService(@"forgot_password_generate_code");
+    [request setPostValue:user forKey:@"email"];
+    
+    __block ASIFormDataRequest *_request = request;
+    [_request setFailedBlock:^{
+        completion(nil, request.error);
+    }];
+    [_request setCompletionBlock:^{
+        completion(request.responseString, nil);
+    }];
+    [request startAsynchronous];
+}
+
+- (void)changePasswordFrom:(NSString *)oldPassword to:(NSString *)newPassword complete:(XBARequestCompletion)completion
+{
+    ASIFormDataRequest *request = XBAuthenticateService(@"change_password");
+    [request setPostValue:self.token forKey:@"token"];
+    [request setPostValue:[oldPassword MD5Digest] forKey:@"oldpassword"];
+    [request setPostValue:[newPassword MD5Digest] forKey:@"newpassword"];
+    
+    __block ASIFormDataRequest *_request = request;
+    [_request setFailedBlock:^{
+        completion(nil, request.error);
+    }];
+    [_request setCompletionBlock:^{
+        completion(request.responseString, nil);
+    }];
+    [request startAsynchronous];
 }
 
 #pragma mark - User's information
@@ -305,6 +293,7 @@ static XBAuthentication *__sharedAuthentication = nil;
         self.username = data[@"username"];
         self.displayname = data[@"display_name"];
         self.userInformation = data;
+        [self saveSession];
     }];
 }
 
@@ -312,20 +301,23 @@ static XBAuthentication *__sharedAuthentication = nil;
 
 - (void)saveSession
 {
-    [[NSUserDefaults standardUserDefaults] setObject:self forKey:@"archived_user_information"];
-    [[NSUserDefaults standardUserDefaults] setObject:[NSDate date] forKey:@"archived_last_update"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    if (self.token)
+    {
+        [[NSUserDefaults standardUserDefaults] setObject:self.token forKey:@"archived_user_information"];
+        [[NSUserDefaults standardUserDefaults] setObject:[NSDate date] forKey:@"archived_last_update"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
 }
 
 - (void)loadSession
 {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:@"archived_last_update"])
     {
-        XBAuthentication *authenticator = [[NSUserDefaults standardUserDefaults] objectForKey:@"archived_user_information"];
+        self.token = [[NSUserDefaults standardUserDefaults] objectForKey:@"archived_user_information"];
         NSDate *lastUpdate = [[NSUserDefaults standardUserDefaults] objectForKey:@"archived_last_update"];
         if (self.expiredTime <= 0 || [[NSDate date] timeIntervalSinceDate:lastUpdate] < self.expiredTime)
         {
-            __sharedAuthentication = [authenticator copy];
+            [self pullUserInformation];
         }
     }
 }
