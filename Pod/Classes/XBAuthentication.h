@@ -78,5 +78,8 @@ typedef void (^XBARequestCompletion)(NSString * responseString, NSError * error)
 - (void)forgotPasswordForUser:(NSString *)user complete:(XBARequestCompletion)completion;
 - (void)changePasswordFrom:(NSString *)oldPassword to:(NSString *)newPassword complete:(XBARequestCompletion)completion;
 
+- (void)cleanup;
+
+
 @end
 

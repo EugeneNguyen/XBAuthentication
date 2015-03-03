@@ -28,6 +28,18 @@ static XBAuthentication *__sharedAuthentication = nil;
     return __sharedAuthentication;
 }
 
+- (void)cleanup
+{
+    self.facebookAccessToken = nil;
+    self.facebookID = nil;
+    self.email = nil;
+    self.username = nil;
+    self.password = nil;
+    self.token = nil;
+    self.deviceToken = nil;
+    self.displayname = nil;
+}
+
 - (void)setPassword:(NSString *)password
 {
     _password = password;
