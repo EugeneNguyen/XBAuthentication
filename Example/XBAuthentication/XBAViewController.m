@@ -10,6 +10,9 @@
 #import <XBAuthentication.h>
 
 @interface XBAViewController () <XBAuthenticationDelegate>
+{
+    IBOutlet UITextField *tfUsername, *tfPassword;
+}
 
 @end
 
@@ -18,13 +21,21 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
+}
+
+- (IBAction)didPressLogin:(id)sender
+{
     XBAuthentication *authenticator = [XBAuthentication sharedInstance];
-    authenticator.username = @"tthufo";
-    authenticator.password = @"123456";
+    authenticator.username = tfUsername.text;
+    authenticator.password = tfPassword.text;
     [authenticator signin];
     
     authenticator.delegate = self;
+}
+
+- (IBAction)didPressLoginWithFacebook:(id)sender
+{
+    [[XBAuthentication sharedInstance] requestFacebookToken];
 }
 
 #pragma mark - XBAuthenticate Delegate

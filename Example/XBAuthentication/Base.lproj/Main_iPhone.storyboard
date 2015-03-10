@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6254" systemVersion="14B25" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="vXZ-lx-hvc">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6254" systemVersion="14D72i" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="vXZ-lx-hvc">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6247"/>
@@ -28,20 +28,48 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="R3S-To-vPn">
+                                <rect key="frame" x="16" y="104" width="288" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="8PH-Rb-bI7"/>
+                                </constraints>
+                                <state key="normal" title="Login">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BjZ-q2-cLe">
+                                <rect key="frame" x="16" y="142" width="288" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="ZVb-pY-rel"/>
+                                </constraints>
+                                <state key="normal" title="Login with facebook">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="didPressLoginWithFacebook:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="3ze-6v-uAJ"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="BjZ-q2-cLe" firstAttribute="top" secondItem="R3S-To-vPn" secondAttribute="bottom" constant="8" id="06x-nv-pXQ"/>
                             <constraint firstItem="KC9-U9-vMA" firstAttribute="trailing" secondItem="kh9-bI-dsS" secondAttribute="trailingMargin" id="Dgj-YP-8vi"/>
+                            <constraint firstItem="BjZ-q2-cLe" firstAttribute="trailing" secondItem="kh9-bI-dsS" secondAttribute="trailingMargin" id="EKg-Gg-4nm"/>
+                            <constraint firstItem="R3S-To-vPn" firstAttribute="top" secondItem="KC9-U9-vMA" secondAttribute="bottom" constant="8" id="J5l-ph-733"/>
+                            <constraint firstItem="BjZ-q2-cLe" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leadingMargin" id="QLp-M9-byq"/>
                             <constraint firstItem="KC9-U9-vMA" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leadingMargin" id="Tk9-2w-3r6"/>
+                            <constraint firstItem="R3S-To-vPn" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leadingMargin" id="YzP-YJ-0xx"/>
                             <constraint firstItem="KC9-U9-vMA" firstAttribute="top" secondItem="oia-nm-Lbg" secondAttribute="bottom" constant="8" id="f4O-Xm-zLm"/>
                             <constraint firstItem="oia-nm-Lbg" firstAttribute="trailing" secondItem="kh9-bI-dsS" secondAttribute="trailingMargin" id="loz-5V-zE3"/>
                             <constraint firstItem="oia-nm-Lbg" firstAttribute="top" secondItem="jyV-Pf-zRb" secondAttribute="bottom" constant="8" id="rSt-Ys-QQS"/>
                             <constraint firstItem="oia-nm-Lbg" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leadingMargin" id="xXx-kw-scH"/>
+                            <constraint firstItem="R3S-To-vPn" firstAttribute="trailing" secondItem="kh9-bI-dsS" secondAttribute="trailingMargin" id="yq1-8b-Ykj"/>
                         </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="467" y="162"/>
         </scene>
     </scenes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">

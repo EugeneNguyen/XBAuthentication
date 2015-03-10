@@ -8,12 +8,15 @@
 
 #import "XBAAppDelegate.h"
 #import <XBAuthentication.h>
+#import <FacebookSDK.h>
 
 @implementation XBAAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     [[XBAuthentication sharedInstance] setHost:@"http://wunhunt.sflashcard.com"];
+    [[XBAuthentication sharedInstance] setFacebookAppID:@"1482264701995422"];
+    [[XBAuthentication sharedInstance] setIsDebug:YES];
     return YES;
 }
 							
@@ -42,6 +45,11 @@
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+}
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+{
+    return [FBAppCall handleOpenURL:url sourceApplication:sourceApplication];
 }
 
 @end

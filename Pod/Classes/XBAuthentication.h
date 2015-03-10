@@ -40,6 +40,7 @@ typedef void (^XBARequestCompletion)(NSString * responseString, NSError * error)
 @property (nonatomic, retain) NSString * deviceToken;
 @property (nonatomic, retain) NSString * facebookAccessToken;
 @property (nonatomic, retain) NSString * facebookID;
+@property (nonatomic, retain) NSString * facebookAppID;
 
 @property (nonatomic, assign) int userid;
 @property (nonatomic, retain) NSString *token;
@@ -49,7 +50,7 @@ typedef void (^XBARequestCompletion)(NSString * responseString, NSError * error)
 
 @property (nonatomic, retain) NSDictionary * errorDescription;
 @property (nonatomic, retain) NSArray * erroList;
-
+@property (nonatomic, assign) BOOL isDebug;
 
 @property (nonatomic, retain) NSDictionary * userInformation;
 @property (nonatomic, retain) NSDictionary * config;
@@ -69,6 +70,9 @@ typedef void (^XBARequestCompletion)(NSString * responseString, NSError * error)
 - (void)signinWithFacebook;
 - (void)signin;
 - (void)signout;
+
+- (void)signoutFacebook;
+- (void)requestFacebookToken;
 
 - (void)loadInformationFromPlist:(NSString *)plistName;
 - (void)loadDescriptionFromPlist:(NSString *)plistName;

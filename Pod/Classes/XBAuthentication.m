@@ -11,13 +11,20 @@
 #import "NSString+MD5.h"
 #import "JSONKit.h"
 #import "SDImageCache.h"
+#import "FacebookSDK.h"
+#import "DDLog.h"
+#import "DDASLLogger.h"
+#import "DDTTYLogger.h"
 
 #define XBAuthenticateService(X) [ASIFormDataRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@/plusauthentication/%@", self.host, X]]]
+
+static int ddLogLevel;
 
 static XBAuthentication *__sharedAuthentication = nil;
 
 @implementation XBAuthentication
 @synthesize password = _password;
+@synthesize isDebug = _isDebug;
 
 + (XBAuthentication *)sharedInstance
 {
@@ -26,6 +33,21 @@ static XBAuthentication *__sharedAuthentication = nil;
         __sharedAuthentication = [[XBAuthentication alloc] init];
     }
     return __sharedAuthentication;
+}
+
+- (void)setIsDebug:(BOOL)isDebug
+{
+    _isDebug = isDebug;
+    if (isDebug)
+    {
+//        ddLogLevel = DDLogLevelVerbose;
+        [DDLog addLogger:[DDASLLogger sharedInstance]];
+        [DDLog addLogger:[DDTTYLogger sharedInstance]];
+    }
+    else
+    {
+//        ddLogLevel = DDLogLevelError;
+    }
 }
 
 - (void)setPassword:(NSString *)password
@@ -64,13 +86,18 @@ static XBAuthentication *__sharedAuthentication = nil;
         [request setPostValue:@"ios" forKey:@"device_type"];
     }
     
+    if (self.userInformation)
+    {
+        [request setPostValue:[self.userInformation JSONString] forKey:@"extra_fields"];
+    }
+    
     [request startAsynchronous];
     
     __block ASIFormDataRequest *_request = request;
     
     [request setCompletionBlock:^{
         NSDictionary *result = [_request.responseString mutableObjectFromJSONString];
-        NSLog(@"%@", _request.responseString);
+        DDLogInfo(@"%@", _request.responseString);
         if (!result)
         {
             return;
@@ -95,8 +122,7 @@ static XBAuthentication *__sharedAuthentication = nil;
     }];
     
     [request setFailedBlock:^{
-        NSLog(@"%@", _request.error);
-        
+        DDLogInfo(@"%@", _request.error);
         if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignUp:withError:andInformation:)])
         {
             [self.delegate authenticateDidFailSignUp:self withError:_request.error andInformation:nil];
@@ -131,7 +157,7 @@ static XBAuthentication *__sharedAuthentication = nil;
     
     [request setCompletionBlock:^{
         NSDictionary *result = [_request.responseString mutableObjectFromJSONString];
-        NSLog(@"%@", _request.responseString);
+        DDLogInfo(@"%@", _request.responseString);
         if (!result)
         {
             return;
@@ -185,7 +211,7 @@ static XBAuthentication *__sharedAuthentication = nil;
     
     [request setCompletionBlock:^{
         NSDictionary *result = [_request.responseString mutableObjectFromJSONString];
-        NSLog(@"%@", _request.responseString);
+        DDLogInfo(@"%@", _request.responseString);
         if (!result)
         {
             return;
@@ -206,13 +232,54 @@ static XBAuthentication *__sharedAuthentication = nil;
     }];
     
     [request setFailedBlock:^{
-        NSLog(@"%@", _request.error);
+        DDLogInfo(@"%@", _request.error);
         
         if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignIn:withError:andInformation:)])
         {
             [self.delegate authenticateDidFailSignIn:self withError:_request.error andInformation:nil];
         }
     }];
+}
+
+- (void)requestFacebookToken
+{
+    [FBSettings setDefaultAppID:self.facebookAppID];
+    
+    if (FBSession.activeSession.state == FBSessionStateCreatedTokenLoaded)
+    {
+        [FBSession openActiveSessionWithReadPermissions:@[@"public_profile"]
+                                           allowLoginUI:NO
+                                      completionHandler:^(FBSession *sessison, FBSessionState state, NSError *error) {
+                                          [self requestFacebookInformtion];
+                                      }];
+    }
+    else
+    {
+        [FBSession openActiveSessionWithReadPermissions:@[@"public_profile"]
+                                           allowLoginUI:YES
+                                      completionHandler:
+         ^(FBSession *session, FBSessionState state, NSError *error)
+         {
+             [self requestFacebookInformtion];
+         }];
+    }
+}
+
+- (void)requestFacebookInformtion
+{
+    [FBRequestConnection startForMeWithCompletionHandler:^(FBRequestConnection *connection, id result, NSError *error) {
+        DDLogInfo(@"%@", result);
+        self.facebookID = [result objectForKey:@"id"];
+        [self signinWithFacebook];
+    }];
+}
+
+- (void)signoutFacebook
+{
+    if (FBSession.activeSession.state == FBSessionStateOpen || FBSession.activeSession.state == FBSessionStateOpenTokenExtended)
+    {
+        [FBSession.activeSession closeAndClearTokenInformation];
+    }
 }
 
 - (void)signout
@@ -246,9 +313,11 @@ static XBAuthentication *__sharedAuthentication = nil;
     
     __block ASIFormDataRequest *_request = request;
     [_request setFailedBlock:^{
+        DDLogInfo(@"%@", request.error);
         completion(nil, request.error);
     }];
     [_request setCompletionBlock:^{
+        DDLogInfo(@"%@", request.responseString);
         completion(request.responseString, nil);
     }];
     [request startAsynchronous];
@@ -263,10 +332,12 @@ static XBAuthentication *__sharedAuthentication = nil;
     
     __block ASIFormDataRequest *_request = request;
     [_request setFailedBlock:^{
+        DDLogInfo(@"%@", request.error);
         completion(nil, request.error);
     }];
     [_request setCompletionBlock:^{
         completion(request.responseString, nil);
+        DDLogInfo(@"%@", request.responseString);
     }];
     [request startAsynchronous];
 }
@@ -282,7 +353,7 @@ static XBAuthentication *__sharedAuthentication = nil;
     __block ASIFormDataRequest *_request = request;
     
     [request setCompletionBlock:^{
-        NSLog(@"%@", _request.responseString);
+        DDLogInfo(@"%@", _request.responseString);
         NSDictionary *result = [_request.responseString mutableObjectFromJSONString];
         if ([result[@"code"] intValue] != 200)
         {

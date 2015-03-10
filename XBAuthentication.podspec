@@ -9,7 +9,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "XBAuthentication"
-  s.version          = "0.2.0.1"
+  s.version          = "0.2.1"
   s.summary          = "Authentication class to integrate with Plus Authenticate"
   s.description      = <<-DESC
                        Authentication class to integrate with Plus Authenticate. Plus Authenticate will be provided in Jan 15 2015.
@@ -37,4 +37,5 @@ Pod::Spec.new do |s|
   s.dependency 'SDWebImage'
   s.dependency 'Facebook-iOS-SDK', '~> 3.21'
   s.dependency 'XBLanguage'
+  s.dependency 'CocoaLumberjack'
 end
