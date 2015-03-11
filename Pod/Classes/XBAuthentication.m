@@ -309,7 +309,7 @@ static XBAuthentication *__sharedAuthentication = nil;
 - (void)forgotPasswordForUser:(NSString *)user complete:(XBARequestCompletion)completion
 {
     ASIFormDataRequest *request = XBAuthenticateService(@"forgot_password_generate_code");
-    [request setPostValue:user forKey:@"user"];
+    [request setPostValue:user forKey:@"email"];
     
     __block ASIFormDataRequest *_request = request;
     [_request setFailedBlock:^{
