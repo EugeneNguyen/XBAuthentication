@@ -105,7 +105,7 @@ static XBAuthentication *__sharedAuthentication = nil;
         
         if ([result[@"code"] intValue] != 200)
         {
-            [self.delegate authenticateDidFailSignUp:self withError:nil andInformation:nil];
+            [self.delegate authenticateDidFailSignUp:self withError:nil andInformation:result];
             return;
         }
         
