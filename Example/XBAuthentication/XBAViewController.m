@@ -28,14 +28,18 @@
     XBAuthentication *authenticator = [XBAuthentication sharedInstance];
     authenticator.username = tfUsername.text;
     authenticator.password = tfPassword.text;
-    [authenticator signin];
+    [authenticator signinWithCompletion:^(NSString *responseString, id object, int errorCode, NSString *description, NSError *error) {
+        
+    }];
     
     authenticator.delegate = self;
 }
 
 - (IBAction)didPressLoginWithFacebook:(id)sender
 {
-    [[XBAuthentication sharedInstance] requestFacebookToken];
+    [[XBAuthentication sharedInstance] startLoginFacebookWithCompletion:^(NSString *responseString, id object, int errorCode, NSString *description, NSError *error) {
+        
+    }];
 }
 
 #pragma mark - XBAuthenticate Delegate

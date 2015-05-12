@@ -8,8 +8,9 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "XBFBData.h"
 
-typedef void (^XBARequestCompletion)(NSString * responseString, NSError * error);
+typedef void (^XBARequestCompletion)(NSString * responseString, id object, int errorCode, NSString *description, NSError * error);
 
 @class XBAuthentication;
 
@@ -55,6 +56,8 @@ typedef void (^XBARequestCompletion)(NSString * responseString, NSError * error)
 @property (nonatomic, retain) NSDictionary * userInformation;
 @property (nonatomic, retain) NSDictionary * config;
 
+@property (nonatomic, retain) XBFBData *facebook;
+
 @property (nonatomic, assign) long expiredTime; // in second, from the last time app shutdown
 
 @property (nonatomic, assign) id <XBAuthenticationDelegate> delegate;
@@ -63,16 +66,22 @@ typedef void (^XBARequestCompletion)(NSString * responseString, NSError * error)
 
 + (XBAuthentication *)sharedInstance;
 
+#pragma mark - Handle event from UIApplication
+
+- (void)applicationDidBecomeActive:(UIApplication *)application;
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;
+
 - (void)saveSession;
 - (void)loadSession;
 
-- (void)signup;
-- (void)signinWithFacebook;
-- (void)signin;
+- (void)signupWithCompletion:(XBARequestCompletion)completion;
+- (void)signinWithFacebookAndCompletion:(XBARequestCompletion)completion;
+- (void)signinWithCompletion:(XBARequestCompletion)completion;
 - (void)signout;
 
 - (void)signoutFacebook;
-- (void)requestFacebookToken;
+- (void)startLoginFacebookWithCompletion:(XBARequestCompletion)completion;
 
 - (void)loadInformationFromPlist:(NSString *)plistName;
 - (void)loadDescriptionFromPlist:(NSString *)plistName;

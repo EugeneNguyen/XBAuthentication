@@ -8,16 +8,15 @@
 
 #import "XBAAppDelegate.h"
 #import <XBAuthentication.h>
-#import <FacebookSDK.h>
 
 @implementation XBAAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     [[XBAuthentication sharedInstance] setHost:@"http://wunhunt.sflashcard.com"];
-    [[XBAuthentication sharedInstance] setFacebookAppID:@"1482264701995422"];
     [[XBAuthentication sharedInstance] setIsDebug:YES];
-    return YES;
+    
+    return [[XBAuthentication sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];;
 }
 							
 - (void)applicationWillResignActive:(UIApplication *)application
@@ -39,7 +38,7 @@
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    [[XBAuthentication sharedInstance] applicationDidBecomeActive:application];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
@@ -49,7 +48,7 @@
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
 {
-    return [FBAppCall handleOpenURL:url sourceApplication:sourceApplication];
+    return [[XBAuthentication sharedInstance] application:application openURL:url sourceApplication:sourceApplication annotation:annotation];
 }
 
 @end

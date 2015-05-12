@@ -11,12 +11,18 @@
 #import "NSString+MD5.h"
 #import "JSONKit.h"
 #import "SDImageCache.h"
-#import "FacebookSDK.h"
 #import "DDLog.h"
 #import "DDASLLogger.h"
 #import "DDTTYLogger.h"
 
 #define XBAuthenticateService(X) [ASIFormDataRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@/plusauthentication/%@", self.host, X]]]
+
+@interface XBAuthentication ()
+{
+    XBARequestCompletion completionBlock;
+}
+
+@end
 
 static int ddLogLevel;
 
@@ -25,14 +31,73 @@ static XBAuthentication *__sharedAuthentication = nil;
 @implementation XBAuthentication
 @synthesize password = _password;
 @synthesize isDebug = _isDebug;
+@synthesize facebook;
 
 + (XBAuthentication *)sharedInstance
 {
     if (!__sharedAuthentication)
     {
         __sharedAuthentication = [[XBAuthentication alloc] init];
+        __sharedAuthentication.facebook = [[XBFBData alloc] init];
     }
     return __sharedAuthentication;
+}
+
+- (void)applicationDidBecomeActive:(UIApplication *)application
+{
+    [FBSDKAppEvents activateApp];
+}
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"Info" ofType:@"plist"];
+    NSDictionary *dictionary = [NSDictionary dictionaryWithContentsOfFile:path];
+    
+    if (!dictionary[@"FacebookAppID"])
+    {
+        NSLog(@"Please setup FacebookAppID in Plist");
+    }
+    if (!dictionary[@"FacebookDisplayName"])
+    {
+        NSLog(@"Please setup FacebookDisplayName in Plist");
+    }
+    if (dictionary[@"FacebookAppID"])
+    {
+        BOOL found = NO;
+        NSString *appID = [NSString stringWithFormat:@"fb%@", dictionary[@"FacebookAppID"]];
+        if (dictionary[@"CFBundleURLTypes"])
+        {
+            for (NSDictionary *item in dictionary[@"CFBundleURLTypes"])
+            {
+                if (item[@"CFBundleURLSchemes"])
+                {
+                    for (NSString *scheme in item[@"CFBundleURLSchemes"])
+                    {
+                        if ([scheme isEqualToString:appID])
+                        {
+                            found = YES;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (!found)
+        {
+            NSLog(@"Please setup URL types in Plist as %@", appID);
+        }
+        
+    }
+    
+    return [[FBSDKApplicationDelegate sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
+}
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+{
+    return [[FBSDKApplicationDelegate sharedInstance] application:application
+                                                          openURL:url
+                                                sourceApplication:sourceApplication
+                                                       annotation:annotation];
 }
 
 - (void)setIsDebug:(BOOL)isDebug
@@ -58,7 +123,7 @@ static XBAuthentication *__sharedAuthentication = nil;
 
 #pragma mark - Sign up/in/out
 
-- (void)signup
+- (void)signupWithCompletion:(XBARequestCompletion)completion
 {
     ASIFormDataRequest *request = XBAuthenticateService(@"register");
     if (self.username)
@@ -68,6 +133,10 @@ static XBAuthentication *__sharedAuthentication = nil;
     if (self.email)
     {
         [request setPostValue:self.email forKey:@"email"];
+    }
+    if (self.displayname)
+    {
+        [request setPostValue:self.displayname forKey:@"displayname"];
     }
     if (self.facebookAccessToken)
     {
@@ -95,42 +164,22 @@ static XBAuthentication *__sharedAuthentication = nil;
     
     __block ASIFormDataRequest *_request = request;
     
-    [request setCompletionBlock:^{
-        NSDictionary *result = [_request.responseString mutableObjectFromJSONString];
-        DDLogInfo(@"%@", _request.responseString);
-        if (!result)
-        {
-            return;
-        }
-        
-        if ([result[@"code"] intValue] != 200)
-        {
-            [self.delegate authenticateDidFailSignUp:self withError:nil andInformation:result];
-            return;
-        }
-        
-        self.errorDescription = [_request.responseString objectFromJSONString];
-        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidSignUp:)])
-        {
-            [self.delegate authenticateDidSignUp:self];
-        }
-        if ([result[@"code"] intValue] == 200)
-        {
-            self.token = result[@"token"];
-            [self pullUserInformation];
-        }
+    [_request setFailedBlock:^{
+        completion(nil, nil, -1, nil, request.error);
     }];
     
-    [request setFailedBlock:^{
-        DDLogInfo(@"%@", _request.error);
-        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignUp:withError:andInformation:)])
+    [_request setCompletionBlock:^{
+        NSDictionary *json = [request.responseString objectFromJSONString];
+        completion(request.responseString, json, [json[@"code"] intValue], json[@"description"], nil);
+        if ([json[@"code"] intValue] == 200)
         {
-            [self.delegate authenticateDidFailSignUp:self withError:_request.error andInformation:nil];
+            self.token = json[@"token"];
+            [self pullUserInformation];
         }
     }];
 }
 
-- (void)signin
+- (void)signinWithCompletion:(XBARequestCompletion)completion
 {
     ASIFormDataRequest *request = XBAuthenticateService(@"login");
     if (self.username)
@@ -155,50 +204,31 @@ static XBAuthentication *__sharedAuthentication = nil;
     
     __block ASIFormDataRequest *_request = request;
     
-    [request setCompletionBlock:^{
-        NSDictionary *result = [_request.responseString mutableObjectFromJSONString];
-        DDLogInfo(@"%@", _request.responseString);
-        if (!result)
-        {
-            return;
-        }
-        
-        if ([result[@"code"] intValue] != 200)
-        {
-            [self.delegate authenticateDidFailSignIn:self withError:nil andInformation:result];
-            return;
-        }
-        
-        self.errorDescription = [_request.responseString objectFromJSONString];
-        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidSignIn:)])
-        {
-            [self.delegate authenticateDidSignIn:self];
-        }
-        if ([result[@"code"] intValue] == 200)
-        {
-            self.token = result[@"token"];
-            [self pullUserInformation];
-        }
+    [_request setFailedBlock:^{
+        completion(nil, nil, -1, nil, request.error);
     }];
     
-    [request setFailedBlock:^{
-        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignIn:withError:andInformation:)])
+    [_request setCompletionBlock:^{
+        NSDictionary *json = [request.responseString objectFromJSONString];
+        completion(request.responseString, json, [json[@"code"] intValue], json[@"description"], nil);
+        if ([json[@"code"] intValue] == 200)
         {
-            [self.delegate authenticateDidFailSignIn:self withError:_request.error andInformation:nil];
+            self.token = json[@"token"];
+            [self pullUserInformation];
         }
     }];
 }
 
-- (void)signinWithFacebook
+- (void)signinWithFacebookAndCompletion:(XBARequestCompletion)completion
 {
     ASIFormDataRequest *request = XBAuthenticateService(@"login");
-    if (self.facebookID)
+    if (self.facebook.accessTokenData.userID)
     {
-        [request setPostValue:self.facebookID forKey:@"facebook_id"];
+        [request setPostValue:self.facebook.accessTokenData.userID forKey:@"facebook_id"];
     }
-    if (self.facebookAccessToken)
+    if (self.facebook.accessTokenData.tokenString)
     {
-        [request setPostValue:self.facebookAccessToken forKey:@"facebook_access_token"];
+        [request setPostValue:self.facebook.accessTokenData.tokenString forKey:@"facebook_access_token"];
     }
     if (self.deviceToken)
     {
@@ -209,76 +239,67 @@ static XBAuthentication *__sharedAuthentication = nil;
     
     __block ASIFormDataRequest *_request = request;
     
-    [request setCompletionBlock:^{
-        NSDictionary *result = [_request.responseString mutableObjectFromJSONString];
-        DDLogInfo(@"%@", _request.responseString);
-        if (!result)
-        {
-            return;
-        }
-        
-        self.errorDescription = [_request.responseString objectFromJSONString];
-        
-        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidSignIn:)])
-        {
-            [self.delegate authenticateDidSignIn:self];
-        }
-        
-        if ([result[@"code"] intValue] == 200)
-        {
-            self.token = result[@"token"];
-            [self pullUserInformation];
-        }
+    [_request setFailedBlock:^{
+        completion(nil, nil, -1, request.error.localizedDescription, request.error);
     }];
     
-    [request setFailedBlock:^{
-        DDLogInfo(@"%@", _request.error);
-        
-        if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidFailSignIn:withError:andInformation:)])
+    [_request setCompletionBlock:^{
+        NSDictionary *json = [request.responseString objectFromJSONString];
+        if ([json[@"code"] intValue] == 200)
         {
-            [self.delegate authenticateDidFailSignIn:self withError:_request.error andInformation:nil];
+            self.token = json[@"token"];
+            [self pullUserInformation];
         }
     }];
 }
 
-- (void)requestFacebookToken
+- (void)startLoginFacebookWithCompletion:(XBARequestCompletion)completion
 {
-    [FBSettings setDefaultAppID:self.facebookAppID];
-    
-    if (FBSession.activeSession.state == FBSessionStateCreatedTokenLoaded)
-    {
-        [FBSession openActiveSessionWithReadPermissions:@[@"public_profile"]
-                                           allowLoginUI:NO
-                                      completionHandler:^(FBSession *sessison, FBSessionState state, NSError *error) {
-                                          [self requestFacebookInformtion];
-                                      }];
+    completionBlock = completion;
+    if ([FBSDKAccessToken currentAccessToken]) {
+        [self requestFacebookInformtion];
     }
     else
     {
-        [FBSession openActiveSessionWithReadPermissions:@[@"public_profile"]
-                                           allowLoginUI:YES
-                                      completionHandler:
-         ^(FBSession *session, FBSessionState state, NSError *error)
-         {
-             [self requestFacebookInformtion];
-         }];
+        FBSDKLoginManager *login = [[FBSDKLoginManager alloc] init];
+        [login logInWithReadPermissions:@[@"email"] handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
+            if (error)
+            {
+                completionBlock(nil, nil, -1, error.localizedDescription, error);
+            }
+            else if (result.isCancelled)
+            {
+                completionBlock(nil, nil, -1, @"Authorization Failed", nil);
+            }
+            else
+            {
+                [self requestFacebookInformtion];
+            }
+        }];
     }
 }
 
 - (void)requestFacebookInformtion
 {
-    [FBRequestConnection startForMeWithCompletionHandler:^(FBRequestConnection *connection, id result, NSError *error) {
-        DDLogInfo(@"%@", result);
-        self.facebookID = [result objectForKey:@"id"];
-        [self signinWithFacebook];
-    }];
+    [[[FBSDKGraphRequest alloc] initWithGraphPath:@"me" parameters:nil]
+     startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+         if (error)
+         {
+             completionBlock(nil, nil, -1, error.localizedDescription, error);
+             return;
+         }
+         self.facebook.accessTokenData = [FBSDKAccessToken currentAccessToken];;
+         [self.facebook updateWithInfo:result];
+         [self signinWithFacebookAndCompletion:completionBlock];
+     }];
 }
 
 - (void)signoutFacebook
 {
-    if (FBSession.activeSession.state == FBSessionStateOpen || FBSession.activeSession.state == FBSessionStateOpenTokenExtended)
+    if ([FBSDKAccessToken currentAccessToken])
     {
-        [FBSession.activeSession closeAndClearTokenInformation];
+        FBSDKLoginManager *login = [[FBSDKLoginManager alloc] init];
+        [login logOut];
     }
 }
 
@@ -292,6 +313,7 @@ static XBAuthentication *__sharedAuthentication = nil;
     {
         [self.delegate authenticateDidSignOut:self];
     }
+    __sharedAuthentication = nil;
 }
 
 - (void)loadInformationFromPlist:(NSString *)plistName
@@ -313,12 +335,11 @@ static XBAuthentication *__sharedAuthentication = nil;
     
     __block ASIFormDataRequest *_request = request;
     [_request setFailedBlock:^{
-        DDLogInfo(@"%@", request.error);
-        completion(nil, request.error);
+        completion(nil, nil, -1, nil, request.error);
     }];
     [_request setCompletionBlock:^{
-        DDLogInfo(@"%@", request.responseString);
-        completion(request.responseString, nil);
+        NSDictionary *json = [request.responseString objectFromJSONString];
+        completion(request.responseString, json, [json[@"code"] intValue], json[@"description"], nil);
     }];
     [request startAsynchronous];
 }
@@ -332,12 +353,11 @@ static XBAuthentication *__sharedAuthentication = nil;
     
     __block ASIFormDataRequest *_request = request;
     [_request setFailedBlock:^{
-        DDLogInfo(@"%@", request.error);
-        completion(nil, request.error);
+        completion(nil, nil, -1, nil, request.error);
     }];
     [_request setCompletionBlock:^{
-        completion(request.responseString, nil);
-        DDLogInfo(@"%@", request.responseString);
+        NSDictionary *json = [request.responseString objectFromJSONString];
+        completion(request.responseString, json, [json[@"code"] intValue], json[@"description"], nil);
     }];
     [request startAsynchronous];
 }
@@ -353,7 +373,6 @@ static XBAuthentication *__sharedAuthentication = nil;
     __block ASIFormDataRequest *_request = request;
     
     [request setCompletionBlock:^{
-        DDLogInfo(@"%@", _request.responseString);
         NSDictionary *result = [_request.responseString mutableObjectFromJSONString];
         if ([result[@"code"] intValue] != 200)
         {
@@ -362,8 +381,13 @@ static XBAuthentication *__sharedAuthentication = nil;
         NSDictionary *data = result[@"data"];
         self.username = data[@"username"];
         self.displayname = data[@"display_name"];
+        self.userid = [data[@"id"] intValue];
         self.userInformation = data;
         [self saveSession];
+        if (completionBlock)
+        {
+            completionBlock(_request.responseString, data, [result[@"code"] intValue], result[@"description"], nil);
+        }
     }];
 }
 

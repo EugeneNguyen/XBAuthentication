@@ -67,6 +67,40 @@ You can use following function for your next step
 
 ```
 
+###Login with facebook
+
+And last super good news, from now, you can login with facebook using XBAuthentication. with very simple following steps:
+
+In AppDelegate file, add following code:
+```objective-c
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+    ...
+    return [[XBAuthentication sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];;
+}
+
+- (void)applicationDidBecomeActive:(UIApplication *)application
+{
+    [[XBAuthentication sharedInstance] applicationDidBecomeActive:application];
+}
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+{
+    return [[XBAuthentication sharedInstance] application:application openURL:url sourceApplication:sourceApplication annotation:annotation];
+}
+
+```
+
+And notice the log. it will remind you about what setting you missed in Info.plist. Just fill all the information as requested.
+And now, when you ready to get user login, using:
+
+```objective-c
+[[XBAuthentication sharedInstance] startLoginFacebookWithCompletion:^(NSString *responseString, id object, int errorCode, NSString *description, NSError *error) {
+    ... do anything that you want with responseString, object (response object), errorCode, description and error. all in your hand now.
+}];
+
+```
+
 ## Author
 
 eugenenguyen, xuanbinh91@gmail.com
