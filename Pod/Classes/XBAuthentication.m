@@ -7,15 +7,10 @@
 //
 
 #import "XBAuthentication.h"
-#import "ASIFormDataRequest.h"
 #import "NSString+MD5.h"
 #import "JSONKit.h"
 #import "SDImageCache.h"
-#import "DDLog.h"
-#import "DDASLLogger.h"
-#import "DDTTYLogger.h"
-
-#define XBAuthenticateService(X) [ASIFormDataRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@/plusauthentication/%@", self.host, X]]]
+#import "XBCacheRequest.h"
 
 @interface XBAuthentication ()
 {
@@ -23,8 +18,6 @@
 }
 
 @end
-
-static int ddLogLevel;
 
 static XBAuthentication *__sharedAuthentication = nil;
 
@@ -100,21 +93,6 @@ static XBAuthentication *__sharedAuthentication = nil;
                                                        annotation:annotation];
 }
 
-- (void)setIsDebug:(BOOL)isDebug
-{
-    _isDebug = isDebug;
-    if (isDebug)
-    {
-//        ddLogLevel = DDLogLevelVerbose;
-        [DDLog addLogger:[DDASLLogger sharedInstance]];
-        [DDLog addLogger:[DDTTYLogger sharedInstance]];
-    }
-    else
-    {
-//        ddLogLevel = DDLogLevelError;
-    }
-}
-
 - (void)setPassword:(NSString *)password
 {
     _password = password;
@@ -125,55 +103,52 @@ static XBAuthentication *__sharedAuthentication = nil;
 
 - (void)signupWithCompletion:(XBARequestCompletion)completion
 {
-    ASIFormDataRequest *request = XBAuthenticateService(@"register");
+    XBCacheRequest * request = XBCacheRequest(@"plusauthentication/register");
+    request.disableCache = YES;
     if (self.username)
     {
-        [request setPostValue:self.username forKey:@"username"];
+        request.dataPost[@"username"] = self.username;
     }
     if (self.email)
     {
-        [request setPostValue:self.email forKey:@"email"];
+        request.dataPost[@"email"] = self.email;
     }
     if (self.displayname)
     {
-        [request setPostValue:self.displayname forKey:@"displayname"];
+        request.dataPost[@"displayname"] = self.displayname;
     }
     if (self.facebookAccessToken)
     {
-        [request setPostValue:self.facebookAccessToken forKey:@"facebook_access_token"];
+        request.dataPost[@"facebook_access_token"] = self.facebookAccessToken;
     }
     if (self.facebookID)
     {
-        [request setPostValue:self.facebookID forKey:@"facebook_id"];
+        request.dataPost[@"facebook_id"] = self.facebookID;
     }
-    [request setPostValue:self.md5password forKey:@"password"];
-    [request setPostValue:@([self.password length]) forKey:@"password_length"];
+    request.dataPost[@"password"] = self.md5password;
+    request.dataPost[@"password_length"] = @([self.password length]);
     
     if (self.deviceToken)
     {
-        [request setPostValue:self.deviceToken forKey:@"device_id"];
-        [request setPostValue:@"ios" forKey:@"device_type"];
+        request.dataPost[@"device_id"] = self.deviceToken;
+        request.dataPost[@"device_type"] = @"ios";
     }
     
     if (self.userInformation)
     {
-        [request setPostValue:[self.userInformation JSONString] forKey:@"extra_fields"];
+        request.dataPost[@"extra_fields"] = [self.userInformation JSONString];
     }
     
-    [request startAsynchronous];
-    
-    __block ASIFormDataRequest *_request = request;
-    
-    [_request setFailedBlock:^{
-        completion(nil, nil, -1, nil, request.error);
-    }];
-    
-    [_request setCompletionBlock:^{
-        NSDictionary *json = [request.responseString objectFromJSONString];
-        completion(request.responseString, json, [json[@"code"] intValue], json[@"description"], nil);
-        if ([json[@"code"] intValue] == 200)
+    [request startAsynchronousWithCallback:^(XBCacheRequest *request, NSString *result, BOOL fromCache, NSError *error, id object) {
+        if (error)
         {
-            self.token = json[@"token"];
+            completion(nil, nil, -1, nil, error);
+            return;
+        }
+        completion(request.responseString, object, [object[@"code"] intValue], object[@"description"], nil);
+        if ([object[@"code"] intValue] == 200)
+        {
+            self.token = object[@"token"];
             [self pullUserInformation];
         }
     }];
@@ -181,35 +156,32 @@ static XBAuthentication *__sharedAuthentication = nil;
 
 - (void)signinWithCompletion:(XBARequestCompletion)completion
 {
-    ASIFormDataRequest *request = XBAuthenticateService(@"login");
+    XBCacheRequest * request = XBCacheRequest(@"plusauthentication/login");
+    request.disableCache = YES;
     if (self.username)
     {
-        [request setPostValue:self.username forKey:@"username"];
+        request.dataPost[@"username"] = self.username;
     }
     if (self.email)
     {
-        [request setPostValue:self.email forKey:@"email"];
+        request.dataPost[@"email"] = self.email;
     }
-    [request setPostValue:self.md5password forKey:@"password"];
+    request.dataPost[@"password"] = self.md5password;
     if (self.deviceToken)
     {
-        [request setPostValue:self.deviceToken forKey:@"device_id"];
-        [request setPostValue:@"ios" forKey:@"device_type"];
+        request.dataPost[@"device_id"] = self.deviceToken;
+        request.dataPost[@"device_type"] = @"ios";
     }
     if (self.facebookID)
     {
-        [request setPostValue:self.facebookID forKey:@"facebook_id"];
+        request.dataPost[@"facebook_id"] = self.facebookID;
     }
-    [request startAsynchronous];
-    
-    __block ASIFormDataRequest *_request = request;
-    
-    [_request setFailedBlock:^{
-        completion(nil, nil, -1, nil, request.error);
-    }];
-    
-    [_request setCompletionBlock:^{
-        NSDictionary *json = [request.responseString objectFromJSONString];
+    [request startAsynchronousWithCallback:^(XBCacheRequest *request, NSString *result, BOOL fromCache, NSError *error, id json) {
+        if (error)
+        {
+            completion(nil, nil, -1, nil, error);
+            return;
+        }
         completion(request.responseString, json, [json[@"code"] intValue], json[@"description"], nil);
         if ([json[@"code"] intValue] == 200)
         {
@@ -221,30 +193,27 @@ static XBAuthentication *__sharedAuthentication = nil;
 
 - (void)signinWithFacebookAndCompletion:(XBARequestCompletion)completion
 {
-    ASIFormDataRequest *request = XBAuthenticateService(@"login");
+    XBCacheRequest * request = XBCacheRequest(@"plusauthentication/login");
+    request.disableCache = YES;
     if (self.facebook.accessTokenData.userID)
     {
-        [request setPostValue:self.facebook.accessTokenData.userID forKey:@"facebook_id"];
+        request.dataPost[@"facebook_id"] = self.facebook.accessTokenData.userID;
     }
     if (self.facebook.accessTokenData.tokenString)
     {
-        [request setPostValue:self.facebook.accessTokenData.tokenString forKey:@"facebook_access_token"];
+        request.dataPost[@"facebook_access_token"] = self.facebook.accessTokenData.tokenString;
     }
     if (self.deviceToken)
     {
-        [request setPostValue:self.deviceToken forKey:@"device_id"];
-        [request setPostValue:@"ios" forKey:@"device_type"];
+        request.dataPost[@"device_id"] = self.deviceToken;
+        request.dataPost[@"device_type"] = @"ios";
     }
-    [request startAsynchronous];
-    
-    __block ASIFormDataRequest *_request = request;
-    
-    [_request setFailedBlock:^{
-        completion(nil, nil, -1, request.error.localizedDescription, request.error);
-    }];
-    
-    [_request setCompletionBlock:^{
-        NSDictionary *json = [request.responseString objectFromJSONString];
+    [request startAsynchronousWithCallback:^(XBCacheRequest *request, NSString *result, BOOL fromCache, NSError *error, id json) {
+        if (error)
+        {
+            completion(nil, nil, -1, error.localizedDescription, error);
+            return;
+        }
         if ([json[@"code"] intValue] == 200)
         {
             self.token = json[@"token"];
@@ -306,10 +275,12 @@ static XBAuthentication *__sharedAuthentication = nil;
 
 - (void)signout
 {
-    ASIFormDataRequest *request = XBAuthenticateService(@"login");
-    [request setPostValue:self.token forKey:@"token"];
-    [request startAsynchronous];
-    
+    XBCacheRequest * request = XBCacheRequest(@"plusauthentication/login");
+    request.disableCache = YES;
+    request.dataPost[@"token"] = self.token;
+    [request startAsynchronousWithCallback:^(XBCacheRequest *request, NSString *result, BOOL fromCache, NSError *error, id object) {
+        
+    }];
     if (self.delegate && [self.delegate respondsToSelector:@selector(authenticateDidSignOut:)])
     {
         [self.delegate authenticateDidSignOut:self];
@@ -331,50 +302,44 @@ static XBAuthentication *__sharedAuthentication = nil;
 
 - (void)forgotPasswordForUser:(NSString *)user complete:(XBARequestCompletion)completion
 {
-    ASIFormDataRequest *request = XBAuthenticateService(@"forgot_password_generate_code");
-    [request setPostValue:user forKey:@"email"];
-    
-    __block ASIFormDataRequest *_request = request;
-    [_request setFailedBlock:^{
-        completion(nil, nil, -1, nil, request.error);
-    }];
-    [_request setCompletionBlock:^{
-        NSDictionary *json = [request.responseString objectFromJSONString];
+    XBCacheRequest * request = XBCacheRequest(@"plusauthentication/forgot_password_generate_code");
+    request.disableCache = YES;
+    request.dataPost[@"email"] = user;
+    [request startAsynchronousWithCallback:^(XBCacheRequest *request, NSString *result, BOOL fromCache, NSError *error, id json) {
+        if (error)
+        {
+            completion(nil, nil, -1, nil, error);
+            return;
+        }
         completion(request.responseString, json, [json[@"code"] intValue], json[@"description"], nil);
     }];
-    [request startAsynchronous];
 }
 
 - (void)changePasswordFrom:(NSString *)oldPassword to:(NSString *)newPassword complete:(XBARequestCompletion)completion
 {
-    ASIFormDataRequest *request = XBAuthenticateService(@"change_password");
-    [request setPostValue:self.token forKey:@"token"];
-    [request setPostValue:[oldPassword MD5Digest] forKey:@"oldpassword"];
-    [request setPostValue:[newPassword MD5Digest] forKey:@"newpassword"];
-    
-    __block ASIFormDataRequest *_request = request;
-    [_request setFailedBlock:^{
-        completion(nil, nil, -1, nil, request.error);
-    }];
-    [_request setCompletionBlock:^{
-        NSDictionary *json = [request.responseString objectFromJSONString];
+    XBCacheRequest * request = XBCacheRequest(@"plusauthentication/change_password");
+    request.disableCache = YES;
+    request.dataPost[@"token"] = self.token;
+    request.dataPost[@"oldpassword"] = [oldPassword MD5Digest];
+    request.dataPost[@"newpassword"] = [newPassword MD5Digest];
+    [request startAsynchronousWithCallback:^(XBCacheRequest *request, NSString *result, BOOL fromCache, NSError *error, id json) {
+        if (error)
+        {
+            completion(nil, nil, -1, nil, error);
+            return;
+        }
         completion(request.responseString, json, [json[@"code"] intValue], json[@"description"], nil);
     }];
-    [request startAsynchronous];
 }
 
 #pragma mark - User's information
 
 - (void)pullUserInformation
 {
-    ASIFormDataRequest *request = XBAuthenticateService(@"get_user_information");
-    [request setPostValue:self.token forKey:@"token"];
-    [request startAsynchronous];
-    
-    __block ASIFormDataRequest *_request = request;
-    
-    [request setCompletionBlock:^{
-        NSDictionary *result = [_request.responseString mutableObjectFromJSONString];
+    XBCacheRequest * request = XBCacheRequest(@"plusauthentication/get_user_information");
+    request.disableCache = YES;
+    request.dataPost[@"token"] = self.token;
+    [request startAsynchronousWithCallback:^(XBCacheRequest *request, NSString *resultString, BOOL fromCache, NSError *error, id result) {
         if ([result[@"code"] intValue] != 200)
         {
             return ;
@@ -387,7 +352,7 @@ static XBAuthentication *__sharedAuthentication = nil;
         [self saveSession];
         if (completionBlock)
         {
-            completionBlock(_request.responseString, data, [result[@"code"] intValue], result[@"description"], nil);
+            completionBlock(request.responseString, data, [result[@"code"] intValue], result[@"description"], nil);
         }
     }];
 }

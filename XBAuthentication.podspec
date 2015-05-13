@@ -9,7 +9,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "XBAuthentication"
-  s.version          = "0.3.0.1"
+  s.version          = "0.3.1"
   s.summary          = "Authentication class to integrate with Plus Authenticate"
   s.description      = <<-DESC
                        Authentication class to integrate with Plus Authenticate. Plus Authenticate will be provided in Jan 15 2015.
@@ -31,11 +31,10 @@ Pod::Spec.new do |s|
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
-  s.dependency 'ASIHTTPRequest'
+  s.dependency 'XBCacheRequest'
   s.dependency 'JSONKit-NoWarning'
   s.dependency 'MD5Digest'
   s.dependency 'SDWebImage'
   s.dependency 'Facebook-iOS-SDK'
   s.dependency 'XBLanguage'
-  s.dependency 'CocoaLumberjack'
 end
