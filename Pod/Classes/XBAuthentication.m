@@ -301,6 +301,7 @@ static XBAuthentication *__sharedAuthentication = nil;
         FBSDKLoginManager *login = [[FBSDKLoginManager alloc] init];
         [login logOut];
     }
+    __sharedAuthentication = nil;
 }
 
 - (void)signout
