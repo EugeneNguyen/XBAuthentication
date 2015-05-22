@@ -224,6 +224,7 @@ static XBAuthentication *__sharedAuthentication = nil;
 
 - (void)startLoginFacebookWithCompletion:(XBARequestCompletion)completion
 {
+    [FBSDKSettings setAppID:self.facebookAppID];
     completionBlock = completion;
     if ([FBSDKAccessToken currentAccessToken]) {
         [self requestFacebookInformtion];
@@ -231,7 +232,7 @@ static XBAuthentication *__sharedAuthentication = nil;
     else
     {
         FBSDKLoginManager *login = [[FBSDKLoginManager alloc] init];
-        [login logInWithReadPermissions:@[@"email"] handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
+        [login logInWithReadPermissions:@[] handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
             if (error)
             {
                 completionBlock(nil, nil, -1, error.localizedDescription, error);
