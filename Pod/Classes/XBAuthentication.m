@@ -32,8 +32,14 @@ static XBAuthentication *__sharedAuthentication = nil;
     {
         __sharedAuthentication = [[XBAuthentication alloc] init];
         __sharedAuthentication.facebook = [[XBFBData alloc] init];
+        [[NSNotificationCenter defaultCenter] addObserver:__sharedAuthentication selector:@selector(didChangeDeviceToken:) name:@"XBPushNotificationDeviceTokenChange" object:nil];
     }
     return __sharedAuthentication;
+}
+
+- (void)didChangeDeviceToken:(NSNotification *)notification
+{
+    self.deviceToken = [[NSUserDefaults standardUserDefaults] stringForKey:@"XBPushNotificationDeviceToken"];
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
