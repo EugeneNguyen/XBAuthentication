@@ -155,7 +155,7 @@ static XBAuthentication *__sharedAuthentication = nil;
         if ([object[@"code"] intValue] == 200)
         {
             self.token = object[@"token"];
-            [self pullUserInformation];
+            [self pullUserInformationWithCompletion:completion];
         }
     }];
 }
@@ -192,7 +192,7 @@ static XBAuthentication *__sharedAuthentication = nil;
         if ([json[@"code"] intValue] == 200)
         {
             self.token = json[@"token"];
-            [self pullUserInformation];
+            [self pullUserInformationWithCompletion:completion];
         }
     }];
 }
@@ -223,7 +223,7 @@ static XBAuthentication *__sharedAuthentication = nil;
         if ([json[@"code"] intValue] == 200)
         {
             self.token = json[@"token"];
-            [self pullUserInformation];
+            [self pullUserInformationWithCompletion:completion];
         }
     }];
 }
@@ -341,7 +341,7 @@ static XBAuthentication *__sharedAuthentication = nil;
 
 #pragma mark - User's information
 
-- (void)pullUserInformation
+- (void)pullUserInformationWithCompletion:(XBARequestCompletion)completion
 {
     XBCacheRequest * request = XBCacheRequest(@"plusauthentication/get_user_information");
     request.disableCache = YES;
@@ -349,6 +349,10 @@ static XBAuthentication *__sharedAuthentication = nil;
     [request startAsynchronousWithCallback:^(XBCacheRequest *request, NSString *resultString, BOOL fromCache, NSError *error, id result) {
         if ([result[@"code"] intValue] != 200)
         {
+            if ([result[@"code"] intValue] == 403)
+            {
+                completion(nil, nil, 403, @"Invalid session", nil);
+            }
             return ;
         }
         NSDictionary *data = result[@"data"];
@@ -357,9 +361,9 @@ static XBAuthentication *__sharedAuthentication = nil;
         self.userid = [data[@"id"] intValue];
         self.userInformation = data;
         [self saveSession];
-        if (completionBlock)
+        if (completion)
         {
-            completionBlock(request.responseString, data, [result[@"code"] intValue], result[@"description"], nil);
+            completion(request.responseString, data, [result[@"code"] intValue], result[@"description"], nil);
         }
     }];
 }
@@ -376,7 +380,7 @@ static XBAuthentication *__sharedAuthentication = nil;
     }
 }
 
-- (void)loadSession
+- (void)loadSessionWithCompletion:(XBARequestCompletion)completion
 {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:@"archived_last_update"])
     {
@@ -384,7 +388,11 @@ static XBAuthentication *__sharedAuthentication = nil;
         NSDate *lastUpdate = [[NSUserDefaults standardUserDefaults] objectForKey:@"archived_last_update"];
         if (self.expiredTime <= 0 || [[NSDate date] timeIntervalSinceDate:lastUpdate] < self.expiredTime)
         {
-            [self pullUserInformation];
+            [self pullUserInformationWithCompletion:completion];
+        }
+        else
+        {
+            completion(nil, nil, -1, @"Your haven't log in yet", nil);
         }
     }
 }

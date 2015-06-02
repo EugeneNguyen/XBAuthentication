@@ -73,7 +73,7 @@ typedef void (^XBARequestCompletion)(NSString * responseString, id object, int e
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;
 
 - (void)saveSession;
-- (void)loadSession;
+- (void)loadSessionWithCompletion:(XBARequestCompletion)completion;
 
 - (void)signupWithCompletion:(XBARequestCompletion)completion;
 - (void)signinWithFacebookAndCompletion:(XBARequestCompletion)completion;
@@ -86,7 +86,7 @@ typedef void (^XBARequestCompletion)(NSString * responseString, id object, int e
 - (void)loadInformationFromPlist:(NSString *)plistName;
 - (void)loadDescriptionFromPlist:(NSString *)plistName;
 
-- (void)pullUserInformation;
+- (void)pullUserInformationWithCompletion:(XBARequestCompletion)completion;
 
 - (void)forgotPasswordForUser:(NSString *)user complete:(XBARequestCompletion)completion;
 - (void)changePasswordFrom:(NSString *)oldPassword to:(NSString *)newPassword complete:(XBARequestCompletion)completion;
